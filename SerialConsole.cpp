@@ -63,6 +63,16 @@ void SerialConsole::printMenu() {
 	Logger::console("SYSTYPE=%i - set board type (0 = Teensy 3.1/3.2/3.5, 1 = Teensy 3.6)", settings.sysType);
 	Serial.println();
 
+	Logger::console("Can0EN=%i - Enable/Disable Can0 (0 = Disable, 1 = Enable)", settings.Can0_Enabled);
+	Logger::console("Can0SPEED=%i - Set speed of Can0 in baud (125000, 250000, etc)", settings.Can0Speed);
+	Logger::console("Can0LISTENONLY=%i - Enable/Disable Listen Only Mode (0 = Dis, 1 = En)", settings.Can0ListenOnly);
+	for (int i = 0; i < 8; i++) {
+		sprintf(buff, "Can0FILTER%i=0x%%x,0x%%x,%%i,%%i (ID, Mask, Extended, Enabled)", i);
+		Logger::console(buff, settings.Can0Filters[i].id, settings.Can0Filters[i].mask,
+			settings.Can0Filters[i].extended, settings.Can0Filters[i].enabled);
+	}
+	Serial.println();
+
 	Logger::console("CAN0EN=%i - Enable/Disable CAN0 (0 = Disable, 1 = Enable)", settings.CAN0_Enabled);
 	Logger::console("CAN0SPEED=%i - Set speed of CAN0 in baud (125000, 250000, etc)", settings.CAN0Speed);
 	Logger::console("CAN0LISTENONLY=%i - Enable/Disable Listen Only Mode (0 = Dis, 1 = En)", settings.CAN0ListenOnly);
@@ -71,18 +81,8 @@ void SerialConsole::printMenu() {
 		Logger::console(buff, settings.CAN0Filters[i].id, settings.CAN0Filters[i].mask,
 			settings.CAN0Filters[i].extended, settings.CAN0Filters[i].enabled);
 	}
-	Serial.println();
-
-	Logger::console("CAN1EN=%i - Enable/Disable CAN1 (0 = Disable, 1 = Enable)", settings.CAN1_Enabled);
-	Logger::console("CAN1SPEED=%i - Set speed of CAN1 in baud (125000, 250000, etc)", settings.CAN1Speed);
-	Logger::console("CAN1LISTENONLY=%i - Enable/Disable Listen Only Mode (0 = Dis, 1 = En)", settings.CAN1ListenOnly);
-	for (int i = 0; i < 8; i++) {
-		sprintf(buff, "CAN1FILTER%i=0x%%x,0x%%x,%%i,%%i (ID, Mask, Extended, Enabled)", i);
-		Logger::console(buff, settings.CAN1Filters[i].id, settings.CAN1Filters[i].mask,
-			settings.CAN1Filters[i].extended, settings.CAN1Filters[i].enabled);
-	}
-	Logger::console("CAN0SEND=ID,LEN,<BYTES SEPARATED BY COMMAS> - Ex: C0SEND=0x200,4,1,2,3,4");
-	Logger::console("CAN1SEND=ID,LEN,<BYTES SEPARATED BY COMMAS> - Ex: C1SEND=0x200,8,00,00,00,10,0xAA,0xBB,0xA0,00");
+	Logger::console("Can0SEND=ID,LEN,<BYTES SEPARATED BY COMMAS> - Ex: C0SEND=0x200,4,1,2,3,4");
+	Logger::console("CAN0SEND=ID,LEN,<BYTES SEPARATED BY COMMAS> - Ex: C1SEND=0x200,8,00,00,00,10,0xAA,0xBB,0xA0,00");
 	Logger::console("MARK=<Description of what you are doing> - Set a mark in the log file about what you are about to do.");
 	Serial.println();
 
@@ -102,8 +102,8 @@ void SerialConsole::printMenu() {
     Logger::console("DIGTOGLEVEL=%i - Set default level of digital pin (0 = LOW, 1 = HIGH)", digToggleSettings.mode >> 7);
     Logger::console("DIGTOGPIN=%i - Pin to use for digital toggling system (Use Arduino Digital Pin Number)", digToggleSettings.pin);
     Logger::console("DIGTOGID=%X - CAN ID to use for Rx or Tx", digToggleSettings.rxTxID);
-    Logger::console("DIGTOGCAN0=%i - Use CAN0 with Digital Toggling System? (0 = No, 1 = Yes)", (digToggleSettings.mode >> 1) & 1);
-    Logger::console("DIGTOGCAN1=%i - Use CAN1 with Digital Toggling System? (0 = No, 1 = Yes)", (digToggleSettings.mode >> 2) & 1);
+    Logger::console("DIGTOGCan0=%i - Use Can0 with Digital Toggling System? (0 = No, 1 = Yes)", (digToggleSettings.mode >> 1) & 1);
+    Logger::console("DIGTOGCAN0=%i - Use CAN0 with Digital Toggling System? (0 = No, 1 = Yes)", (digToggleSettings.mode >> 2) & 1);
     Logger::console("DIGTOGLEN=%i - Length of frame to send (Tx) or validate (Rx)", digToggleSettings.length);
     Logger::console("DIGTOGPAYLOAD=%X,%X,%X,%X,%X,%X,%X,%X - Payload to send or validate against (comma separated list)", digToggleSettings.payload[0],
                     digToggleSettings.payload[1], digToggleSettings.payload[2], digToggleSettings.payload[3], digToggleSettings.payload[4],
@@ -183,35 +183,35 @@ void SerialConsole::handleLawicelCmd()
 	switch (val)
 	{
 	  case 0:
-	    settings.CAN0Speed = 10000;
+	    settings.Can0Speed = 10000;
 	    break;
 	  case 1:
-	    settings.CAN0Speed = 20000;
+	    settings.Can0Speed = 20000;
 	    break;
 	  case 2:
-	    settings.CAN0Speed = 50000;
+	    settings.Can0Speed = 50000;
 	    break;	    
 	  case 3:
-	    settings.CAN0Speed = 100000;
+	    settings.Can0Speed = 100000;
 	    break;	    
 	  case 4:
-	    settings.CAN0Speed = 125000;
+	    settings.Can0Speed = 125000;
 	    break;	    
 	  case 5:
-	    settings.CAN0Speed = 250000;
+	    settings.Can0Speed = 250000;
 	    break;	    
 	  case 6:
-	    settings.CAN0Speed = 500000;
+	    settings.Can0Speed = 500000;
 	    break;	    
 	  case 7:
-	    settings.CAN0Speed = 800000;
+	    settings.Can0Speed = 800000;
 	    break;	    
 	  case 8:
-	    settings.CAN0Speed = 1000000;
+	    settings.Can0Speed = 1000000;
 	    break;	    
 	}
       case 's': //setup canbus baud via register writes (we can't really do that...)
-	//settings.CAN0Speed = 250000;
+	//settings.Can0Speed = 250000;
 	break;
       case 'r': //send a standard RTR frame (don't really... that's so deprecated its not even funny)
 	break;
@@ -274,14 +274,31 @@ void SerialConsole::handleConfigCmd() {
 
 	cmdString.toUpperCase();
 
-	if (cmdString == String("CAN0EN")) {
+	if (cmdString == String("Can0EN")) {
+		if (newValue < 0) newValue = 0;
+		if (newValue > 1) newValue = 1;
+		Logger::console("Setting Can0 Enabled to %i", newValue);
+		settings.Can0_Enabled = newValue;
+		if (newValue == 1) {
+            Can0.begin(settings.Can0Speed);
+            if (SysSettings.Can0EnablePin < 255) {
+                pinMode(SysSettings.Can0EnablePin, OUTPUT);
+                digitalWrite(SysSettings.Can0EnablePin, HIGH);
+            }
+        }
+		else {
+            Can0.end();
+            digitalWrite(SysSettings.Can0EnablePin, LOW);
+        }
+		writeEEPROM = true;
+	} else if (cmdString == String("CAN0EN")) {
 		if (newValue < 0) newValue = 0;
 		if (newValue > 1) newValue = 1;
 		Logger::console("Setting CAN0 Enabled to %i", newValue);
-		settings.CAN0_Enabled = newValue;
 		if (newValue == 1) {
             Can0.begin(settings.CAN0Speed);
-            if (SysSettings.CAN0EnablePin < 255) {
+            if (SysSettings.CAN0EnablePin < 255)
+            {
                 pinMode(SysSettings.CAN0EnablePin, OUTPUT);
                 digitalWrite(SysSettings.CAN0EnablePin, HIGH);
             }
@@ -290,27 +307,19 @@ void SerialConsole::handleConfigCmd() {
             Can0.end();
             digitalWrite(SysSettings.CAN0EnablePin, LOW);
         }
+		settings.CAN0_Enabled = newValue;
 		writeEEPROM = true;
-	} else if (cmdString == String("CAN1EN")) {
-		if (newValue < 0) newValue = 0;
-		if (newValue > 1) newValue = 1;
-		Logger::console("Setting CAN1 Enabled to %i", newValue);
-		if (newValue == 1) {
-            Can1.begin(settings.CAN1Speed);
-            if (SysSettings.CAN1EnablePin < 255)
-            {
-                pinMode(SysSettings.CAN1EnablePin, OUTPUT);
-                digitalWrite(SysSettings.CAN1EnablePin, HIGH);
-            }
-        }
-		else {
-            Can1.end();
-            digitalWrite(SysSettings.CAN1EnablePin, LOW);
-        }
-		settings.CAN1_Enabled = newValue;
-		writeEEPROM = true;
-	} else if (cmdString == String("CAN0SPEED")) {
+	} else if (cmdString == String("Can0SPEED")) {
 		if (newValue > 0 && newValue <= 1000000) 
+		{
+			Logger::console("Setting Can0 Baud Rate to %i", newValue);
+			settings.Can0Speed = newValue;
+			Can0.begin(settings.Can0Speed);
+			writeEEPROM = true;
+		}
+		else Logger::console("Invalid baud rate! Enter a value 1 - 1000000");
+	} else if (cmdString == String("CAN0SPEED")) {
+		if (newValue > 0 && newValue <= 1000000)
 		{
 			Logger::console("Setting CAN0 Baud Rate to %i", newValue);
 			settings.CAN0Speed = newValue;
@@ -318,16 +327,23 @@ void SerialConsole::handleConfigCmd() {
 			writeEEPROM = true;
 		}
 		else Logger::console("Invalid baud rate! Enter a value 1 - 1000000");
-	} else if (cmdString == String("CAN1SPEED")) {
-		if (newValue > 0 && newValue <= 1000000)
+
+	} else if (cmdString == String("Can0LISTENONLY")) {
+		if (newValue >= 0 && newValue <= 1)
 		{
-			Logger::console("Setting CAN1 Baud Rate to %i", newValue);
-			settings.CAN1Speed = newValue;
-			Can1.begin(settings.CAN1Speed);
+			Logger::console("Setting Can0 Listen Only to %i", newValue);
+			settings.Can0ListenOnly = newValue;
+			if (settings.Can0ListenOnly)
+			{
+				Can0.setListenOnly(true);
+			}
+			else
+			{
+				Can0.setListenOnly(false);
+			}
 			writeEEPROM = true;
 		}
-		else Logger::console("Invalid baud rate! Enter a value 1 - 1000000");
-
+		else Logger::console("Invalid setting! Enter a value 0 - 1");
 	} else if (cmdString == String("CAN0LISTENONLY")) {
 		if (newValue >= 0 && newValue <= 1)
 		{
@@ -344,75 +360,59 @@ void SerialConsole::handleConfigCmd() {
 			writeEEPROM = true;
 		}
 		else Logger::console("Invalid setting! Enter a value 0 - 1");
-	} else if (cmdString == String("CAN1LISTENONLY")) {
-		if (newValue >= 0 && newValue <= 1)
-		{
-			Logger::console("Setting CAN1 Listen Only to %i", newValue);
-			settings.CAN1ListenOnly = newValue;
-			if (settings.CAN1ListenOnly)
-			{
-				Can1.setListenOnly(true);
-			}
-			else
-			{
-				Can1.setListenOnly(false);
-			}
-			writeEEPROM = true;
-		}
-		else Logger::console("Invalid setting! Enter a value 0 - 1");
-	} else if (cmdString == String("CAN0FILTER0")) { //someone should kick me in the face for this laziness... FIX THIS!
+	} else if (cmdString == String("Can0FILTER0")) { //someone should kick me in the face for this laziness... FIX THIS!
 		handleFilterSet(0, 0, newString);
 	}
-	else if (cmdString == String("CAN0FILTER1")) {
+	else if (cmdString == String("Can0FILTER1")) {
 		if (handleFilterSet(0, 1, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER2")) {
+	else if (cmdString == String("Can0FILTER2")) {
 		if (handleFilterSet(0, 2, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER3")) {
+	else if (cmdString == String("Can0FILTER3")) {
 		if (handleFilterSet(0, 3, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER4")) {
+	else if (cmdString == String("Can0FILTER4")) {
 		if (handleFilterSet(0, 4, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER5")) {
+	else if (cmdString == String("Can0FILTER5")) {
 		if (handleFilterSet(0, 5, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER6")) {
+	else if (cmdString == String("Can0FILTER6")) {
 		if (handleFilterSet(0, 6, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER7")) {
+	else if (cmdString == String("Can0FILTER7")) {
 		if (handleFilterSet(0, 7, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN1FILTER0")) {
+	else if (cmdString == String("CAN0FILTER0")) {
 		if (handleFilterSet(1, 0, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN1FILTER1")) {
+	else if (cmdString == String("CAN0FILTER1")) {
 		if (handleFilterSet(1, 1, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN1FILTER2")) {
+	else if (cmdString == String("CAN0FILTER2")) {
 		if (handleFilterSet(1, 2, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN1FILTER3")) {
+	else if (cmdString == String("CAN0FILTER3")) {
 		if (handleFilterSet(1, 3, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN1FILTER4")) {
+	else if (cmdString == String("CAN0FILTER4")) {
 		if (handleFilterSet(1, 4, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN1FILTER5")) {
+	else if (cmdString == String("CAN0FILTER5")) {
 		if (handleFilterSet(1, 5, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN1FILTER6")) {
+	else if (cmdString == String("CAN0FILTER6")) {
 		if (handleFilterSet(1, 6, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN1FILTER7")) {
+	else if (cmdString == String("CAN0FILTER7")) {
 		if (handleFilterSet(1, 7, newString)) writeEEPROM = true;
+	}
+	else if (cmdString == String("Can0SEND")) {
+		handleCANSend(Can0, newString);
 	}
 	else if (cmdString == String("CAN0SEND")) {
 		handleCANSend(Can0, newString);
-	}
-	else if (cmdString == String("CAN1SEND")) {
-		handleCANSend(Can1, newString);
 	}
 	else if (cmdString == String("MARK")) { //just ascii based for now
 		if (settings.fileOutputType == GVRET) Logger::file("Mark: %s", newString);
@@ -514,19 +514,19 @@ void SerialConsole::handleConfigCmd() {
             writeDigEE = true;
         }
         else Logger::console("Invalid CAN ID. Must be either an 11 or 29 bit ID");
-     } else if (cmdString == String("DIGTOGCAN0")) {
+     } else if (cmdString == String("DIGTOGCan0")) {
         if (newValue >= 0 && newValue <= 1)
         {
-            Logger::console("Setting Digital Toggle CAN0 Usage to %i", newValue);
+            Logger::console("Setting Digital Toggle Can0 Usage to %i", newValue);
             if (newValue == 0) digToggleSettings.mode &= ~2;
             if (newValue == 1) digToggleSettings.mode |= 2;
             writeDigEE = true;
         }
         else Logger::console("Invalid value. Must be either 0 or 1");       
-     } else if (cmdString == String("DIGTOGCAN1")) {
+     } else if (cmdString == String("DIGTOGCAN0")) {
         if (newValue >= 0 && newValue <= 1)
         {
-            Logger::console("Setting Digital Toggle CAN1 Usage to %i", newValue);
+            Logger::console("Setting Digital Toggle CAN0 Usage to %i", newValue);
             if (newValue == 0) digToggleSettings.mode &= ~4;
             if (newValue == 1) digToggleSettings.mode |= 4;
             writeDigEE = true;
@@ -625,22 +625,22 @@ void SerialConsole::handleShortCmd() {
 		SysSettings.logToFile = false;
 		break;
 	case 'O': //LAWICEL open canbus port (first one only because LAWICEL has no concept of dual canbus
-		//Can0.begin(settings.CAN0Speed, SysSettings.CAN1EnablePin);
+		//Can0.begin(settings.Can0Speed, SysSettings.CAN0EnablePin);
 		//Can0.enable();
 		Serial.write(13); //send CR to mean "ok"
 		SysSettings.lawicelMode = true;
 		break;
 	case 'C': //LAWICEL close canbus port (First one)
 		Can0.end();
-        digitalWrite(SysSettings.CAN0EnablePin, LOW);
+        digitalWrite(SysSettings.Can0EnablePin, LOW);
 		Serial.write(13); //send CR to mean "ok"
 		break;
 	case 'L': //LAWICEL open canbus port in listen only mode
-		Can0.begin(settings.CAN0Speed); //this is NOT really listen only mode but it isn't supported yet so for now...
-        if (SysSettings.CAN0EnablePin < 255)
+		Can0.begin(settings.Can0Speed); //this is NOT really listen only mode but it isn't supported yet so for now...
+        if (SysSettings.Can0EnablePin < 255)
         {
-            pinMode(SysSettings.CAN0EnablePin, OUTPUT);
-            digitalWrite(SysSettings.CAN0EnablePin, HIGH);
+            pinMode(SysSettings.Can0EnablePin, OUTPUT);
+            digitalWrite(SysSettings.Can0EnablePin, HIGH);
         }
 		Can0.setListenOnly(true);
 		Serial.write(13); //send CR to mean "ok"
@@ -669,7 +669,7 @@ void SerialConsole::handleShortCmd() {
 	}
 }
 
-//CAN0FILTER%i=%%i,%%i,%%i,%%i (ID, Mask, Extended, Enabled)", i);
+//Can0FILTER%i=%%i,%%i,%%i,%%i (ID, Mask, Extended, Enabled)", i);
 bool SerialConsole::handleFilterSet(uint8_t bus, uint8_t filter, char *values) 
 {
 	if (filter < 0 || filter > 7) return false;
@@ -695,19 +695,19 @@ bool SerialConsole::handleFilterSet(uint8_t bus, uint8_t filter, char *values)
 
 	if (bus == 0)
 	{
+		settings.Can0Filters[filter].id = idVal;
+		settings.Can0Filters[filter].mask = maskVal;
+		settings.Can0Filters[filter].extended = extVal;
+		settings.Can0Filters[filter].enabled = enVal;
+		//Can0.setRXFilter(filter, idVal, maskVal, extVal);
+	}
+	else if (bus == 1) 
+	{
 		settings.CAN0Filters[filter].id = idVal;
 		settings.CAN0Filters[filter].mask = maskVal;
 		settings.CAN0Filters[filter].extended = extVal;
 		settings.CAN0Filters[filter].enabled = enVal;
 		//Can0.setRXFilter(filter, idVal, maskVal, extVal);
-	}
-	else if (bus == 1) 
-	{
-		settings.CAN1Filters[filter].id = idVal;
-		settings.CAN1Filters[filter].mask = maskVal;
-		settings.CAN1Filters[filter].extended = extVal;
-		settings.CAN1Filters[filter].enabled = enVal;
-		//Can1.setRXFilter(filter, idVal, maskVal, extVal);
 	}
 
 	return true;
@@ -761,4 +761,3 @@ unsigned int SerialConsole::parseHexString(char *str, int length)
     for (int i = 0; i < length; i++) result += parseHexCharacter(str[i]) << (4 * (length - i - 1));
     return result;
 }
-

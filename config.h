@@ -53,12 +53,12 @@ enum FILEOUTPUTTYPE
 struct EEPROMSettings { //Must stay under 256 - currently somewhere around 222
 	uint8_t version;
 	
+	uint32_t Can0Speed;
 	uint32_t CAN0Speed;
-	uint32_t CAN1Speed;
+	boolean Can0_Enabled;
 	boolean CAN0_Enabled;
-	boolean CAN1_Enabled;
+	FILTER Can0Filters[NUM_MAILBOXES]; // filters for our 16 mailboxes - 10*8 = 160 bytes
 	FILTER CAN0Filters[NUM_MAILBOXES]; // filters for our 16 mailboxes - 10*8 = 160 bytes
-	FILTER CAN1Filters[NUM_MAILBOXES]; // filters for our 16 mailboxes - 10*8 = 160 bytes
 
 	boolean useBinarySerialComm; //use a binary protocol on the serial link or human readable format?
 	FILEOUTPUTTYPE fileOutputType; //what format should we use for file output?
@@ -72,8 +72,8 @@ struct EEPROMSettings { //Must stay under 256 - currently somewhere around 222
 	uint8_t logLevel; //Level of logging to output on serial line
 	uint8_t sysType; //0 = Teensy 3.1/3.2/3.5       1 = Teensy 3.6
 	
-	boolean CAN0ListenOnly; //if true we don't allow any messing with the bus but rather just passively monitor.
-    boolean CAN1ListenOnly;
+	boolean Can0ListenOnly; //if true we don't allow any messing with the bus but rather just passively monitor.
+    boolean CAN0ListenOnly;
 
 	uint16_t valid; //stores a validity token to make sure EEPROM is not corrupt
 };
@@ -86,11 +86,11 @@ struct DigitalCANToggleSettings //16 bytes
      *     1 = Set digital I/O on CAN Rx (Add 127
      * 
      * Bit 1 - 
+     *     0 = Don't listen to or send on Can0
+     *     1 = Listen on or send on Can0
+     * Bit 2 -
      *     0 = Don't listen to or send on CAN0
      *     1 = Listen on or send on CAN0
-     * Bit 2 -
-     *     0 = Don't listen to or send on CAN1
-     *     1 = Listen on or send on CAN1
      * Bit 7 -
      *     0 = Pin is defaulted to LOW. If bit 0 is 0 then we assume the start up state is LOW, if bit 0 is 1 then we set pin LOW
      *     1 = Pin is defaulted HIGH. If bit 0 is 0 then assume start up state is HIGH, if bit 0 is 1 then set pin HIGH
@@ -107,8 +107,8 @@ struct DigitalCANToggleSettings //16 bytes
 
 struct SystemSettings 
 {
+	uint8_t Can0EnablePin;
 	uint8_t CAN0EnablePin;
-	uint8_t CAN1EnablePin;
 	boolean useSD; //should we attempt to use the SDCard? (No logging possible otherwise)
 	boolean logToFile; //are we currently supposed to be logging to file?
 	uint8_t SDCardSelPin;
@@ -145,8 +145,8 @@ extern DigitalCANToggleSettings digToggleSettings;
 #define EEPROM_ADDRESS  0
 #define EEPROM_VER		0x10
 
-#define CAN0_EN_PIN		2
-#define CAN1_EN_PIN		35
+#define Can0_EN_PIN		2
+#define CAN0_EN_PIN		35
 #define BLE_RST         7
 #define BLE_DFU         8
 #define BLE_IRQ         9
@@ -154,4 +154,3 @@ extern DigitalCANToggleSettings digToggleSettings;
 #define BLINK_LED       13
 
 #endif /* CONFIG_H_ */
-
