@@ -1,12 +1,13 @@
 Teensy-RET
 =======
 
-Reverse Engineering Tool based around a custom board with a socket for Teensy 3.6. The board also has SN65HVD234
-transceivers, an I2C to OneWire interface chip, and an Adafruit BLE module. Only the transceivers are relevant to this
+Reverse Engineering Tool, forked from Collin80, modified to work on Teensy 3.2 with no SD card.
+
+Only the transceivers are relevant to this 
 project but the project is setup to use pin 2 for enabling CAN0 and pin 35 for CAN1 enable. Set this as appropriate for your
 designs or to 255 to disable if no enable pin is needed.
 
-The project builds with the Arduino IDE with the TeensyDuino add-on
+The project builds with the Arduino IDE with the TeensyDuino add-on.
 
 WARNING: This is currently an early port of GVRET. Some things won't work, some things will crash. But, initial testing shows
 compatibility with SavvyCAN, ability to read frames to the console, and stability at high bus loads.
