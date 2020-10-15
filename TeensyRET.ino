@@ -40,6 +40,9 @@ int scl = 19;
 evilOLED disp(sda, scl);
 bool rxactivitytoggle = false;
 
+
+
+
 byte i = 0;
 
 byte serialBuffer[SER_BUFF_SIZE];
@@ -93,7 +96,7 @@ void loadSettings() {
       settings.CAN0Filters[j].id = 0;
       settings.CAN0Filters[j].mask = 0;
       settings.CAN0Filters[j].enabled = true;
-      settings.CAN0Filters[j].extended = false;
+      settings.CAN0Filters[j].extended = true;
       settings.CAN0Filters[j].id = 0;
       settings.CAN0Filters[j].mask = 0;
     }
@@ -152,6 +155,11 @@ void loadSettings() {
 }
 
 void setup() {
+
+  CAN_filter_t allPassFilter; // Enables extended addresses
+  allPassFilter.id = 0;
+  allPassFilter.ext = 1;
+  allPassFilter.rtr = 0;
 
   pinMode(sda, OUTPUT);
   pinMode(scl, OUTPUT);
@@ -289,6 +297,10 @@ void setup() {
   //disp.cls(0x00);
   //delay(100);
 
+  for (int filterNum = 4; filterNum < 16; filterNum++) {
+    Can0.setFilter(allPassFilter, filterNum);
+  }
+
   Serial.print("Done with init\n");
   digitalWrite(BLINK_LED, HIGH);
   
@@ -331,10 +343,12 @@ void toggleRXLED(){
     //disp.cls(0x00);
     disp.setCursor(3, 5);
     disp.putString("ACTIVITY:><");
+    digitalWrite(BLINK_LED, HIGH);
     rxactivitytoggle = false;
   } else {
     disp.setCursor(3, 5);
     disp.putString("ACTIVITY:<>");
+    digitalWrite(BLINK_LED, LOW);
     rxactivitytoggle = true;
   }
   
@@ -547,6 +561,7 @@ void loop()
   //if (!SysSettings.lawicelMode || SysSettings.lawicelAutoPoll || SysSettings.lawicelPollCounter > 0)
   //{
     if (Can0.available()) {
+      Serial.println("FrameReceived!!");
       Can0.read(incoming);
       toggleRXLED();
       if (isConnected) sendFrameToUSB(incoming, 0);
