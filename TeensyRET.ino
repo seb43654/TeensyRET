@@ -39,8 +39,7 @@ int sda = 18;
 int scl = 19;
 evilOLED disp(sda, scl);
 bool rxactivitytoggle = false;
-
-
+int framecounter = 0;
 
 
 byte i = 0;
@@ -71,34 +70,21 @@ void loadSettings() {
     Logger::console("Resetting to factory defaults");
     settings.version = EEPROM_VER;
     settings.appendFile = false;
-    settings.CAN0Speed = 500000;
-    settings.CAN0_Enabled = false;
-    settings.CAN0Speed = 500000;
-    settings.CAN0_Enabled = true;
+    settings.Can0Speed = 500000;
+    settings.Can0_Enabled = true;
     sprintf((char *)settings.fileNameBase, "CANBUS");
     sprintf((char *)settings.fileNameExt, "TXT");
     settings.fileNum = 1;
     for (int i = 0; i < 6; i++) 
     {
-      settings.CAN0Filters[i].enabled = true;
-      settings.CAN0Filters[i].extended = true;
-      settings.CAN0Filters[i].id = 0;
-      settings.CAN0Filters[i].mask = 0;
-      settings.CAN0Filters[i].enabled = true;
-      settings.CAN0Filters[i].extended = true;
-      settings.CAN0Filters[i].id = 0;
-      settings.CAN0Filters[i].mask = 0;
-    }
-    for (int j = 6; j < 14; j++)
-    {
-      settings.CAN0Filters[j].enabled = true;
-      settings.CAN0Filters[j].extended = false;
-      settings.CAN0Filters[j].id = 0;
-      settings.CAN0Filters[j].mask = 0;
-      settings.CAN0Filters[j].enabled = true;
-      settings.CAN0Filters[j].extended = true;
-      settings.CAN0Filters[j].id = 0;
-      settings.CAN0Filters[j].mask = 0;
+      settings.Can0Filters[i].enabled = true;
+      settings.Can0Filters[i].extended = true;
+      settings.Can0Filters[i].id = 0;
+      settings.Can0Filters[i].mask = 0;
+      settings.Can0Filters[i].enabled = true;
+      settings.Can0Filters[i].extended = true;
+      settings.Can0Filters[i].id = 0;
+      settings.Can0Filters[i].mask = 0;
     }
     settings.fileOutputType = CRTD;
     settings.useBinarySerialComm = false;
@@ -106,14 +92,13 @@ void loadSettings() {
     settings.logLevel = 1; //info
     settings.sysType = 0; //CANDUE as default
     settings.valid = 0; //not used right now
-    settings.CAN0ListenOnly = false;
-    settings.CAN0ListenOnly = false;
+    settings.Can0ListenOnly = false;
     EEPROM.put(EEPROM_ADDRESS, settings);
   }
   else {
     Logger::console("Using stored values from EEPROM");
-        if (settings.CAN0ListenOnly > 1) settings.CAN0ListenOnly = 0;
-        if (settings.CAN0ListenOnly > 1) settings.CAN0ListenOnly = 0;
+        if (settings.Can1ListenOnly > 1) settings.Can0ListenOnly = 0;
+        if (settings.Can1ListenOnly > 1) settings.Can1ListenOnly = 0;
   }
   
   EEPROM.get(EEPROM_ADDRESS + 500, digToggleSettings);
@@ -141,8 +126,7 @@ void loadSettings() {
         
     //case 1:  
       Logger::console("Running on Teensy Hardware");
-      SysSettings.CAN0EnablePin = 2;
-      SysSettings.CAN0EnablePin = 35;
+      SysSettings.Can0EnablePin = 2;
       SysSettings.LED_CANTX = 13; //We do have an LED at pin 13. Use it for both
       SysSettings.LED_CANRX = 13; //RX and TX.
       SysSettings.LED_LOGGING = 255; //we just don't have an LED to use for this.
@@ -150,8 +134,7 @@ void loadSettings() {
       digitalWrite(13, LOW);
       //break;
     //}
-  if (SysSettings.CAN0EnablePin != 255) pinMode(SysSettings.CAN0EnablePin, OUTPUT);
-  if (SysSettings.CAN0EnablePin != 255) pinMode(SysSettings.CAN0EnablePin, OUTPUT);
+  if (SysSettings.Can0EnablePin != 255) pinMode(SysSettings.Can0EnablePin, OUTPUT);
 }
 
 void setup() {
@@ -219,16 +202,16 @@ void setup() {
         }
     }
 
-  if (settings.CAN0_Enabled)
+  if (true)
   {
-        Serial.println("Init CAN0");
-    Can0.begin(settings.CAN0Speed);
-        if (SysSettings.CAN0EnablePin < 255) 
+    Serial.println("Init Can0");
+    Can0.begin(settings.Can0Speed);
+        if (SysSettings.Can0EnablePin < 255) 
         {
-            pinMode(SysSettings.CAN0EnablePin, OUTPUT);
-            digitalWrite(SysSettings.CAN0EnablePin, HIGH);
+            pinMode(SysSettings.Can0EnablePin, OUTPUT);
+            digitalWrite(SysSettings.Can0EnablePin, HIGH);
         }
-        if (settings.CAN0ListenOnly)
+        if (settings.Can0ListenOnly)
         {
             Can0.setListenOnly(true);
         }
@@ -238,44 +221,22 @@ void setup() {
         }
   }
   else {
-        Serial.println("CAN0 disabled.");
+        Serial.println("Can0 disabled.");
         //TODO: apparently calling end while it isn't inialized actually locks it up
-        //Can0.end();
-    }
-  if (settings.CAN0_Enabled)
-  {
-        Serial.println("Init CAN0");
-    Can0.begin(settings.CAN0Speed);
-        if (SysSettings.CAN0EnablePin < 255)
-        {
-            pinMode(SysSettings.CAN0EnablePin, OUTPUT);
-            digitalWrite(SysSettings.CAN0EnablePin, HIGH);
-        }
-        if (settings.CAN0ListenOnly)
-        {
-            Can0.setListenOnly(true);
-        }
-        else
-        {
-            Can0.setListenOnly(false);
-        }        
-  }
-  else {
-        Serial.println("CAN0 disabled.");
         //Can0.end();
     }
     /*
   for (int i = 0; i < 7; i++) 
   {
-    if (settings.CAN0Filters[i].enabled) 
+    if (settings.Can1Filters[i].enabled) 
     {
-      Can0.setRXFilter(i, settings.CAN0Filters[i].id,
-        settings.CAN0Filters[i].mask, settings.CAN0Filters[i].extended);
+      Can0.setRXFilter(i, settings.Can1Filters[i].id,
+        settings.Can1Filters[i].mask, settings.Can1Filters[i].extended);
     }
-    if (settings.CAN0Filters[i].enabled)
+    if (settings.Can1Filters[i].enabled)
     {
-      Can0.setRXFilter(i, settings.CAN0Filters[i].id,
-        settings.CAN0Filters[i].mask, settings.CAN0Filters[i].extended);
+      Can0.setRXFilter(i, settings.Can1Filters[i].id,
+        settings.Can1Filters[i].mask, settings.Can1Filters[i].extended);
     }
   }
   */
@@ -339,15 +300,19 @@ void toggleRXLED(){
   SysSettings.rxToggle = !SysSettings.rxToggle;
   //setLED(SysSettings.LED_CANRX, SysSettings.rxToggle);
 
+  disp.setCursor(3, 5);
+  disp.putString(framecounter);
+  framecounter++;
+  
+
   if (rxactivitytoggle == true){
-    //disp.cls(0x00);
-    disp.setCursor(3, 5);
-    disp.putString("ACTIVITY:><");
+    //disp.setCursor(3, 5);
+    //disp.putString("ACTIVITY:><");
     digitalWrite(BLINK_LED, HIGH);
     rxactivitytoggle = false;
   } else {
-    disp.setCursor(3, 5);
-    disp.putString("ACTIVITY:<>");
+    //disp.setCursor(3, 5);
+    //disp.putString("ACTIVITY:<>");
     digitalWrite(BLINK_LED, LOW);
     rxactivitytoggle = true;
   }
@@ -517,29 +482,26 @@ void sendDigToggleMsg() {
     frame.len = digToggleSettings.length;
     for (int c = 0; c < frame.len; c++) frame.buf[c] = digToggleSettings.payload[c];
     if (digToggleSettings.mode & 2) {
-        Serial.println("Sending digital toggle message on CAN0");
-        Can0.write(frame);
-    }
-    if (digToggleSettings.mode & 4) {
-        Serial.println("Sending digital toggle message on CAN0");
+        Serial.println("Sending digital toggle message on Can1");
         Can0.write(frame);
     }
 }
 
-/*
-Loop executes as often as possible all the while interrupts fire in the background.
-The serial comm protocol is as follows:
-All commands start with 0xF1 this helps to synchronize if there were comm issues
-Then the next byte specifies which command this is. 
-Then the command data bytes which are specific to the command
-Lastly, there is a checksum byte just to be sure there are no missed or duped bytes
-Any bytes between checksum and 0xF1 are thrown away
 
-Yes, this should probably have been done more neatly but this way is likely to be the
-fastest and safest with limited function calls
-*/
-void loop()
-{
+void loop(){
+    /*
+  Loop executes as often as possible all the while interrupts fire in the background.
+  The serial comm protocol is as follows:
+  All commands start with 0xF1 this helps to synchronize if there were comm issues
+  Then the next byte specifies which command this is. 
+  Then the command data bytes which are specific to the command
+  Lastly, there is a checksum byte just to be sure there are no missed or duped bytes
+  Any bytes between checksum and 0xF1 are thrown away
+  
+  Yes, this should probably have been done more neatly but this way is likely to be the
+  fastest and safest with limited function calls
+  */
+
   static int loops = 0;
   CAN_message_t incoming;
   static CAN_message_t build_out_frame;
@@ -561,21 +523,12 @@ void loop()
   //if (!SysSettings.lawicelMode || SysSettings.lawicelAutoPoll || SysSettings.lawicelPollCounter > 0)
   //{
     if (Can0.available()) {
-      Serial.println("FrameReceived!!");
       Can0.read(incoming);
       toggleRXLED();
       if (isConnected) sendFrameToUSB(incoming, 0);
       if (SysSettings.logToFile) sendFrameToFile(incoming, 0);
             if (digToggleSettings.enabled && (digToggleSettings.mode & 1) && (digToggleSettings.mode & 2)) processDigToggleFrame(incoming);
       //fwGotFrame(&incoming);
-    }
-
-    if (Can0.available()) {
-      Can0.read(incoming); 
-      toggleRXLED();
-      if (isConnected) sendFrameToUSB(incoming, 1);
-            if (digToggleSettings.enabled && (digToggleSettings.mode & 1) && (digToggleSettings.mode & 4)) processDigToggleFrame(incoming);
-      if (SysSettings.logToFile) sendFrameToFile(incoming, 1);
     }
     if (SysSettings.lawicelPollCounter > 0) SysSettings.lawicelPollCounter--;
   //}
@@ -601,14 +554,13 @@ void loop()
       }      
   }
 
-  if (micros() - lastFlushMicros > SER_BUFF_FLUSH_INTERVAL)
-  {
-  if (serialBufferLength > 0)
-  {
-    Serial.write(serialBuffer, serialBufferLength);
-          serialBufferLength = 0;
-    lastFlushMicros = micros();
-  }
+  if (micros() - lastFlushMicros > SER_BUFF_FLUSH_INTERVAL){
+    if (serialBufferLength > 0)
+    {
+      Serial.write(serialBuffer, serialBufferLength);
+            serialBufferLength = 0;
+      lastFlushMicros = micros();
+    }
   }
 
   serialCnt = 0;
@@ -618,15 +570,11 @@ void loop()
      switch (state) {
      case IDLE:
        if (in_byte == 0xF1) state = GET_COMMAND;
-       else if (in_byte == 0xE7) 
-      {
-      settings.useBinarySerialComm = true;
-      SysSettings.lawicelMode = false;
+       else if (in_byte == 0xE7){
+        settings.useBinarySerialComm = true;
+        SysSettings.lawicelMode = false;
       }
-       else 
-       {
-         console.rcvCharacter((uint8_t)in_byte);
-       }
+       else {console.rcvCharacter((uint8_t)in_byte);}
        break;
      case GET_COMMAND:
        switch (in_byte) {
@@ -695,16 +643,16 @@ void loop()
          //immediately return data on canbus params
          buff[0] = 0xF1;
          buff[1] = 6;
-         buff[2] = settings.CAN0_Enabled + ((unsigned char)settings.CAN0ListenOnly << 4);
-         buff[3] = settings.CAN0Speed;
-         buff[4] = settings.CAN0Speed >> 8;
-         buff[5] = settings.CAN0Speed >> 16;
-         buff[6] = settings.CAN0Speed >> 24;
-         buff[7] = settings.CAN0_Enabled + ((unsigned char)settings.CAN0ListenOnly << 4);
-         buff[8] = settings.CAN0Speed;
-         buff[9] = settings.CAN0Speed >> 8;
-         buff[10] = settings.CAN0Speed >> 16;
-         buff[11] = settings.CAN0Speed >> 24;
+         buff[2] = settings.Can1_Enabled + ((unsigned char)settings.Can1ListenOnly << 4);
+         buff[3] = settings.Can1Speed;
+         buff[4] = settings.Can1Speed >> 8;
+         buff[5] = settings.Can1Speed >> 16;
+         buff[6] = settings.Can1Speed >> 24;
+         buff[7] = settings.Can1_Enabled + ((unsigned char)settings.Can1ListenOnly << 4);
+         buff[8] = settings.Can1Speed;
+         buff[9] = settings.Can1Speed >> 8;
+         buff[10] = settings.Can1Speed >> 16;
+         buff[11] = settings.Can1Speed >> 24;
          Serial.write(buff, 12);
          state = IDLE;
          break;
@@ -829,44 +777,44 @@ void loop()
            {
              if (build_int & 0x40000000)
              {
-               settings.CAN0_Enabled = true;
+               settings.Can1_Enabled = true;
              }
              else
              {
-               settings.CAN0_Enabled = false;
+               settings.Can1_Enabled = false;
              }
              if (build_int & 0x20000000)
              {
-               settings.CAN0ListenOnly = true;
+               settings.Can1ListenOnly = true;
                Can0.setListenOnly(true);
              }
              else
              {
-               settings.CAN0ListenOnly = false;
+               settings.Can1ListenOnly = false;
                Can0.setListenOnly(false);
              }
            }
            else
            {
-             settings.CAN0_Enabled = true;
+             settings.Can1_Enabled = true;
            }
            build_int = build_int & 0xFFFFF;
            if (build_int > 1000000) build_int = 1000000;           
            Can0.begin(build_int);
-                   if (SysSettings.CAN0EnablePin < 255 && settings.CAN0_Enabled)
+                   if (SysSettings.Can1EnablePin < 255 && settings.Can1_Enabled)
                    {
-                       pinMode(SysSettings.CAN0EnablePin, OUTPUT);
-                       digitalWrite(SysSettings.CAN0EnablePin, HIGH);
+                       pinMode(SysSettings.Can1EnablePin, OUTPUT);
+                       digitalWrite(SysSettings.Can1EnablePin, HIGH);
                    }
-                   else digitalWrite(SysSettings.CAN0EnablePin, LOW);
+                   else digitalWrite(SysSettings.Can1EnablePin, LOW);
            //Can0.set_baudrate(build_int);
-           settings.CAN0Speed = build_int;           
+           settings.Can1Speed = build_int;           
          }
          else //disable first canbus
          {
            Can0.end();
-                   digitalWrite(SysSettings.CAN0EnablePin, LOW);
-           settings.CAN0_Enabled = false;
+                   digitalWrite(SysSettings.Can1EnablePin, LOW);
+           settings.Can1_Enabled = false;
          }
          break;
        case 4:
@@ -886,45 +834,45 @@ void loop()
            {
              if (build_int & 0x40000000)
              {
-               settings.CAN0_Enabled = true;
+               settings.Can1_Enabled = true;
              }
              else
              {
-               settings.CAN0_Enabled = false;
+               settings.Can1_Enabled = false;
              }
              if (build_int & 0x20000000)
              {
-               settings.CAN0ListenOnly = true;
+               settings.Can1ListenOnly = true;
                Can0.setListenOnly(true);
              }
              else
              {
-               settings.CAN0ListenOnly = false;
+               settings.Can1ListenOnly = false;
                Can0.setListenOnly(false);
              }
            }
            else
            {
-             settings.CAN0_Enabled = true;
+             settings.Can1_Enabled = true;
            }
            build_int = build_int & 0xFFFFF;
            if (build_int > 1000000) build_int = 1000000;
            Can0.begin(build_int);
-                   if (SysSettings.CAN0EnablePin < 255 && settings.CAN0_Enabled)
+                   if (SysSettings.Can1EnablePin < 255 && settings.Can1_Enabled)
                    {
-                       pinMode(SysSettings.CAN0EnablePin, OUTPUT);
-                       digitalWrite(SysSettings.CAN0EnablePin, HIGH);
+                       pinMode(SysSettings.Can1EnablePin, OUTPUT);
+                       digitalWrite(SysSettings.Can1EnablePin, HIGH);
                    }
-                   else digitalWrite(SysSettings.CAN0EnablePin, LOW);
+                   else digitalWrite(SysSettings.Can1EnablePin, LOW);
            //Can0.set_baudrate(build_int);
 
-           settings.CAN0Speed = build_int;           
+           settings.Can1Speed = build_int;           
          }
          else //disable second canbus
          {
            Can0.end();
-                   digitalWrite(SysSettings.CAN0EnablePin, LOW);
-           settings.CAN0_Enabled = false;
+                   digitalWrite(SysSettings.Can1EnablePin, LOW);
+           settings.Can1_Enabled = false;
          }
          state = IDLE;
           //now, write out the new canbus settings to EEPROM

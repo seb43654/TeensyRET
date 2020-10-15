@@ -73,16 +73,16 @@ void SerialConsole::printMenu() {
 	}
 	Serial.println();
 
-	Logger::console("CAN0EN=%i - Enable/Disable CAN0 (0 = Disable, 1 = Enable)", settings.CAN0_Enabled);
-	Logger::console("CAN0SPEED=%i - Set speed of CAN0 in baud (125000, 250000, etc)", settings.CAN0Speed);
-	Logger::console("CAN0LISTENONLY=%i - Enable/Disable Listen Only Mode (0 = Dis, 1 = En)", settings.CAN0ListenOnly);
+	Logger::console("Can1EN=%i - Enable/Disable Can1 (0 = Disable, 1 = Enable)", settings.Can1_Enabled);
+	Logger::console("Can1SPEED=%i - Set speed of Can1 in baud (125000, 250000, etc)", settings.Can1Speed);
+	Logger::console("Can1LISTENONLY=%i - Enable/Disable Listen Only Mode (0 = Dis, 1 = En)", settings.Can1ListenOnly);
 	for (int i = 0; i < 8; i++) {
-		sprintf(buff, "CAN0FILTER%i=0x%%x,0x%%x,%%i,%%i (ID, Mask, Extended, Enabled)", i);
-		Logger::console(buff, settings.CAN0Filters[i].id, settings.CAN0Filters[i].mask,
-			settings.CAN0Filters[i].extended, settings.CAN0Filters[i].enabled);
+		sprintf(buff, "Can1FILTER%i=0x%%x,0x%%x,%%i,%%i (ID, Mask, Extended, Enabled)", i);
+		Logger::console(buff, settings.Can1Filters[i].id, settings.Can1Filters[i].mask,
+			settings.Can1Filters[i].extended, settings.Can1Filters[i].enabled);
 	}
 	Logger::console("Can0SEND=ID,LEN,<BYTES SEPARATED BY COMMAS> - Ex: C0SEND=0x200,4,1,2,3,4");
-	Logger::console("CAN0SEND=ID,LEN,<BYTES SEPARATED BY COMMAS> - Ex: C1SEND=0x200,8,00,00,00,10,0xAA,0xBB,0xA0,00");
+	Logger::console("Can1SEND=ID,LEN,<BYTES SEPARATED BY COMMAS> - Ex: C1SEND=0x200,8,00,00,00,10,0xAA,0xBB,0xA0,00");
 	Logger::console("MARK=<Description of what you are doing> - Set a mark in the log file about what you are about to do.");
 	Serial.println();
 
@@ -103,7 +103,7 @@ void SerialConsole::printMenu() {
     Logger::console("DIGTOGPIN=%i - Pin to use for digital toggling system (Use Arduino Digital Pin Number)", digToggleSettings.pin);
     Logger::console("DIGTOGID=%X - CAN ID to use for Rx or Tx", digToggleSettings.rxTxID);
     Logger::console("DIGTOGCan0=%i - Use Can0 with Digital Toggling System? (0 = No, 1 = Yes)", (digToggleSettings.mode >> 1) & 1);
-    Logger::console("DIGTOGCAN0=%i - Use CAN0 with Digital Toggling System? (0 = No, 1 = Yes)", (digToggleSettings.mode >> 2) & 1);
+    Logger::console("DIGTOGCan1=%i - Use Can1 with Digital Toggling System? (0 = No, 1 = Yes)", (digToggleSettings.mode >> 2) & 1);
     Logger::console("DIGTOGLEN=%i - Length of frame to send (Tx) or validate (Rx)", digToggleSettings.length);
     Logger::console("DIGTOGPAYLOAD=%X,%X,%X,%X,%X,%X,%X,%X - Payload to send or validate against (comma separated list)", digToggleSettings.payload[0],
                     digToggleSettings.payload[1], digToggleSettings.payload[2], digToggleSettings.payload[3], digToggleSettings.payload[4],
@@ -291,23 +291,23 @@ void SerialConsole::handleConfigCmd() {
             digitalWrite(SysSettings.Can0EnablePin, LOW);
         }
 		writeEEPROM = true;
-	} else if (cmdString == String("CAN0EN")) {
+	} else if (cmdString == String("Can1EN")) {
 		if (newValue < 0) newValue = 0;
 		if (newValue > 1) newValue = 1;
-		Logger::console("Setting CAN0 Enabled to %i", newValue);
+		Logger::console("Setting Can1 Enabled to %i", newValue);
 		if (newValue == 1) {
-            Can0.begin(settings.CAN0Speed);
-            if (SysSettings.CAN0EnablePin < 255)
+            Can0.begin(settings.Can1Speed);
+            if (SysSettings.Can1EnablePin < 255)
             {
-                pinMode(SysSettings.CAN0EnablePin, OUTPUT);
-                digitalWrite(SysSettings.CAN0EnablePin, HIGH);
+                pinMode(SysSettings.Can1EnablePin, OUTPUT);
+                digitalWrite(SysSettings.Can1EnablePin, HIGH);
             }
         }
 		else {
             Can0.end();
-            digitalWrite(SysSettings.CAN0EnablePin, LOW);
+            digitalWrite(SysSettings.Can1EnablePin, LOW);
         }
-		settings.CAN0_Enabled = newValue;
+		settings.Can1_Enabled = newValue;
 		writeEEPROM = true;
 	} else if (cmdString == String("Can0SPEED")) {
 		if (newValue > 0 && newValue <= 1000000) 
@@ -318,12 +318,12 @@ void SerialConsole::handleConfigCmd() {
 			writeEEPROM = true;
 		}
 		else Logger::console("Invalid baud rate! Enter a value 1 - 1000000");
-	} else if (cmdString == String("CAN0SPEED")) {
+	} else if (cmdString == String("Can1SPEED")) {
 		if (newValue > 0 && newValue <= 1000000)
 		{
-			Logger::console("Setting CAN0 Baud Rate to %i", newValue);
-			settings.CAN0Speed = newValue;
-			Can0.begin(settings.CAN0Speed);
+			Logger::console("Setting Can1 Baud Rate to %i", newValue);
+			settings.Can1Speed = newValue;
+			Can0.begin(settings.Can1Speed);
 			writeEEPROM = true;
 		}
 		else Logger::console("Invalid baud rate! Enter a value 1 - 1000000");
@@ -344,12 +344,12 @@ void SerialConsole::handleConfigCmd() {
 			writeEEPROM = true;
 		}
 		else Logger::console("Invalid setting! Enter a value 0 - 1");
-	} else if (cmdString == String("CAN0LISTENONLY")) {
+	} else if (cmdString == String("Can1LISTENONLY")) {
 		if (newValue >= 0 && newValue <= 1)
 		{
-			Logger::console("Setting CAN0 Listen Only to %i", newValue);
-			settings.CAN0ListenOnly = newValue;
-			if (settings.CAN0ListenOnly)
+			Logger::console("Setting Can1 Listen Only to %i", newValue);
+			settings.Can1ListenOnly = newValue;
+			if (settings.Can1ListenOnly)
 			{
 				Can0.setListenOnly(true);
 			}
@@ -384,34 +384,34 @@ void SerialConsole::handleConfigCmd() {
 	else if (cmdString == String("Can0FILTER7")) {
 		if (handleFilterSet(0, 7, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER0")) {
+	else if (cmdString == String("Can1FILTER0")) {
 		if (handleFilterSet(1, 0, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER1")) {
+	else if (cmdString == String("Can1FILTER1")) {
 		if (handleFilterSet(1, 1, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER2")) {
+	else if (cmdString == String("Can1FILTER2")) {
 		if (handleFilterSet(1, 2, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER3")) {
+	else if (cmdString == String("Can1FILTER3")) {
 		if (handleFilterSet(1, 3, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER4")) {
+	else if (cmdString == String("Can1FILTER4")) {
 		if (handleFilterSet(1, 4, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER5")) {
+	else if (cmdString == String("Can1FILTER5")) {
 		if (handleFilterSet(1, 5, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER6")) {
+	else if (cmdString == String("Can1FILTER6")) {
 		if (handleFilterSet(1, 6, newString)) writeEEPROM = true;
 	}
-	else if (cmdString == String("CAN0FILTER7")) {
+	else if (cmdString == String("Can1FILTER7")) {
 		if (handleFilterSet(1, 7, newString)) writeEEPROM = true;
 	}
 	else if (cmdString == String("Can0SEND")) {
 		handleCANSend(Can0, newString);
 	}
-	else if (cmdString == String("CAN0SEND")) {
+	else if (cmdString == String("Can1SEND")) {
 		handleCANSend(Can0, newString);
 	}
 	else if (cmdString == String("MARK")) { //just ascii based for now
@@ -523,10 +523,10 @@ void SerialConsole::handleConfigCmd() {
             writeDigEE = true;
         }
         else Logger::console("Invalid value. Must be either 0 or 1");       
-     } else if (cmdString == String("DIGTOGCAN0")) {
+     } else if (cmdString == String("DIGTOGCan1")) {
         if (newValue >= 0 && newValue <= 1)
         {
-            Logger::console("Setting Digital Toggle CAN0 Usage to %i", newValue);
+            Logger::console("Setting Digital Toggle Can1 Usage to %i", newValue);
             if (newValue == 0) digToggleSettings.mode &= ~4;
             if (newValue == 1) digToggleSettings.mode |= 4;
             writeDigEE = true;
@@ -625,7 +625,7 @@ void SerialConsole::handleShortCmd() {
 		SysSettings.logToFile = false;
 		break;
 	case 'O': //LAWICEL open canbus port (first one only because LAWICEL has no concept of dual canbus
-		//Can0.begin(settings.Can0Speed, SysSettings.CAN0EnablePin);
+		//Can0.begin(settings.Can0Speed, SysSettings.Can1EnablePin);
 		//Can0.enable();
 		Serial.write(13); //send CR to mean "ok"
 		SysSettings.lawicelMode = true;
@@ -703,10 +703,10 @@ bool SerialConsole::handleFilterSet(uint8_t bus, uint8_t filter, char *values)
 	}
 	else if (bus == 1) 
 	{
-		settings.CAN0Filters[filter].id = idVal;
-		settings.CAN0Filters[filter].mask = maskVal;
-		settings.CAN0Filters[filter].extended = extVal;
-		settings.CAN0Filters[filter].enabled = enVal;
+		settings.Can1Filters[filter].id = idVal;
+		settings.Can1Filters[filter].mask = maskVal;
+		settings.Can1Filters[filter].extended = extVal;
+		settings.Can1Filters[filter].enabled = enVal;
 		//Can0.setRXFilter(filter, idVal, maskVal, extVal);
 	}
 
